@@ -1,0 +1,100 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: 
+globs: 
+alwaysApply: false
+---
+ ---
+description: This rule governs Discord.js bot development across the project. It should be applied whenever: (1) Creating or modifying Discord bot functionality, (2) Setting up Discord.js event handlers, (3) Implementing commands or interactions, (4) Structuring Discord bot architecture, (5) Working with Discord APIs, or (6) Handling Discord-specific security concerns. The rule ensures consistent bot structure, optimal performance, security best practices, and maintainable code organization. It's particularly crucial when implementing Discord commands, event handlers, permissions, and API interactions to prevent common pitfalls and security vulnerabilities.
+globs: 
+alwaysApply: false
+---
+
+# Discord.js Bot Development Standards
+
+## Critical Rules
+
+- Organize bot code into modular components (commands, events, utilities)
+- Use environment variables for tokens and sensitive credentials
+- Implement proper Discord.js intents selection (only request what's needed)
+- Structure commands using the slash command API instead of message commands
+- Implement global error handling for all Discord API interactions
+- Use try/catch blocks around all Discord API calls
+- Store command definitions in separate files by category
+- Cache frequently accessed data to minimize API calls
+- Implement proper permission checks before executing commands
+- Use interaction.reply() instead of deprecated methods
+- Never share or commit bot tokens to repositories
+- Register all command handlers before client.login()
+- Implement proper cooldowns for commands with rate limits
+- Use separate development and production bot applications
+- Implement proper TypeScript types for Discord.js objects
+- Follow the discord.js documentation version matching your installed package
+
+## Examples
+
+<example>
+  // Proper command structure
+  import { SlashCommandBuilder } from 'discord.js';
+  
+  export default {
+    data: new SlashCommandBuilder()
+      .setName('ping')
+      .setDescription('Replies with Pong!'),
+    async execute(interaction) {
+      try {
+        await interaction.reply('Pong!');
+      } catch (error) {
+        console.error(error);
+        await interaction.reply({ 
+          content: 'There was an error executing this command!', 
+          ephemeral: true 
+        });
+      }
+    },
+  };
+  
+  // Optimal client setup
+  import { Client, GatewayIntentBits } from 'discord.js';
+  import dotenv from 'dotenv';
+  
+  dotenv.config();
+  
+  const client = new Client({ 
+    intents: [
+      GatewayIntentBits.Guilds,
+      GatewayIntentBits.GuildMessages,
+    ] 
+  });
+  
+  client.login(process.env.DISCORD_TOKEN);
+</example>
+
+<example type="invalid">
+  // Improper command structure with no error handling
+  client.on('messageCreate', message => {
+    if (message.content === '!ping') {
+      message.channel.send('Pong!');
+    }
+  });
+  
+  // Hard-coded token (security risk)
+  const client = new Client({ intents: 32767 }); // Using all intents unnecessarily
+  client.login('MTIzNDU2Nzg5MDEyMzQ1Njc4OQ.ABCDEF.GHIJKLMNOPQRSTUVWXYZ');
+  
+  // No modular structure
+  client.on('interactionCreate', async interaction => {
+    if (!interaction.isChatInputCommand()) return;
+    
+    if (interaction.commandName === 'ban') {
+      // Command logic directly in event handler
+    } else if (interaction.commandName === 'kick') {
+      // More command logic directly in event handler
+    }
+    // Hundreds of lines of code for different commands
+  });
+</example>
