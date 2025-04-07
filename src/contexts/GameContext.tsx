@@ -20,6 +20,7 @@ interface GameContextProps {
   gameState: GameState
   makeChoice: (choice: Choice) => void
   resetGame: () => void
+  setWagerApproved: () => void
 }
 
 // Create context
@@ -27,10 +28,10 @@ const GameContext = createContext<GameContextProps | undefined>(undefined)
 
 // Create provider component
 export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const { gameState, makeChoice, resetGame } = useGameState()
+  const { gameState, makeChoice, resetGame, setWagerApproved } = useGameState()
 
   return (
-    <GameContext.Provider value={{ gameState, makeChoice, resetGame }}>
+    <GameContext.Provider value={{ gameState, makeChoice, resetGame, setWagerApproved }}>
       {children}
     </GameContext.Provider>
   )

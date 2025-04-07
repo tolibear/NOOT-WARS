@@ -8,15 +8,15 @@ interface GameResultProps {
 }
 
 const GameResult: React.FC<GameResultProps> = ({ playerChoice, computerChoice, result }) => {
-  // Get emoji for each choice
-  const getEmoji = (choice: Choice) => {
+  // Get image path for each choice
+  const getImagePath = (choice: Choice) => {
     switch (choice) {
       case 'rock':
-        return '👊'
+        return '/assets/icons/rock.png'
       case 'paper':
-        return '✋'
+        return '/assets/icons/paper.png'
       case 'scissors':
-        return '✌️'
+        return '/assets/icons/scissors.png'
       default:
         return ''
     }
@@ -79,13 +79,17 @@ const GameResult: React.FC<GameResultProps> = ({ playerChoice, computerChoice, r
           <div className="text-lg font-medium text-blue-300">You</div>
           <div className={`
             bg-gradient-to-br from-gray-800 to-gray-900 
-            w-24 h-24 mx-auto rounded-full 
-            flex items-center justify-center text-5xl 
+            w-32 h-32 mx-auto rounded-full 
+            flex items-center justify-center
             shadow-inner transform transition-all duration-500
             ${getGlowBorder(true)}
             ${result === 'win' ? 'scale-110' : ''}
           `}>
-            {getEmoji(playerChoice)}
+            <img 
+              src={getImagePath(playerChoice)} 
+              alt={playerChoice} 
+              className="w-24 h-24 object-contain transform scale-x-[-1]" 
+            />
           </div>
           <div className="capitalize text-gray-300 font-medium">{playerChoice}</div>
         </div>
@@ -103,13 +107,17 @@ const GameResult: React.FC<GameResultProps> = ({ playerChoice, computerChoice, r
           <div className="text-lg font-medium text-red-300">Computer</div>
           <div className={`
             bg-gradient-to-br from-gray-800 to-gray-900 
-            w-24 h-24 mx-auto rounded-full 
-            flex items-center justify-center text-5xl 
+            w-32 h-32 mx-auto rounded-full 
+            flex items-center justify-center
             shadow-inner transform transition-all duration-500
             ${getGlowBorder(false)}
             ${result === 'loss' ? 'scale-110' : ''}
           `}>
-            {getEmoji(computerChoice)}
+            <img 
+              src={getImagePath(computerChoice)} 
+              alt={computerChoice} 
+              className="w-24 h-24 object-contain" 
+            />
           </div>
           <div className="capitalize text-gray-300 font-medium">{computerChoice}</div>
         </div>

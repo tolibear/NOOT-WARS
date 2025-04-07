@@ -12,13 +12,16 @@ noot-wars/
 │   │   │   ├── Game.tsx
 │   │   │   ├── GameResult.tsx
 │   │   │   ├── GameScreen.tsx
-│   │   │   └── RoundTracker.tsx
+│   │   │   ├── RoundTracker.tsx
+│   │   │   ├── WagerConfirmation.tsx
+│   │   │   └── WagerSetup.tsx
 │   │   ├── Wallet/
 │   │   │   ├── ConnectButton.tsx
 │   │   │   └── WalletInfo.tsx
 │   │   └── UI/
 │   ├── contexts/
 │   │   ├── GameContext.tsx
+│   │   ├── WagerContext.tsx
 │   │   └── WalletContext.tsx
 │   ├── hooks/
 │   │   ├── useGameState.ts
@@ -60,9 +63,9 @@ NOOT WARS is a meme-themed Rock-Paper-Scissors style singleplayer game incorpora
 ## Implementation Progress Summary
 | Phase | Status | Completed Tasks |
 |-------|--------|-----------------|
-| Phase 1 | 80% Complete | Project setup, UI components, Game logic |
-| Phase 2 | 50% Complete | AGW integration, Connection flow |
-| Phase 3 | Not Started | - |
+| Phase 1 | 100% Complete | Project setup, UI components, Game logic, Local storage |
+| Phase 2 | 90% Complete | AGW integration, Connection flow, Token interface |
+| Phase 3 | 60% Complete | Wager UI, Token approval flow |
 | Phase 4 | Not Started | - |
 | Phase 5 | Not Started | - |
 
@@ -86,14 +89,15 @@ NOOT WARS is a meme-themed Rock-Paper-Scissors style singleplayer game incorpora
    - Develop winner determination logic (Rock > Scissors > Paper > Rock) ✅
    - Build best-of-three match resolution system ✅
 
-4. **Local Storage Integration** ⏳
-   - Set up local storage structure for game data
-   - Save basic game stats (wins, losses, draws)
-   - Store player "EXP" gained from wins
+4. **Local Storage Integration** ✅
+   - Set up local storage structure for game data ✅
+   - Save basic game stats (wins, losses, draws) ✅
+   - Store player "EXP" gained from wins ✅
+   - Implement transaction history tracking ✅
 
 ### Deliverables
 - Functioning Rock-Paper-Scissors game with best-of-three match format ✅
-- Basic game statistics saved to local storage ⏳
+- Basic game statistics saved to local storage ✅
 - Complete game flow from start to match resolution ✅
 
 ### Implementation Notes
@@ -101,7 +105,8 @@ NOOT WARS is a meme-themed Rock-Paper-Scissors style singleplayer game incorpora
 - Round tracking is handled by the `RoundTracker` component
 - Game results are displayed in the `GameResult` component
 - Player choices are made through the `ChoiceButton` component
-- Next step is to integrate with local storage
+- Local storage implemented with comprehensive match history tracking
+- Added transaction recording capability for blockchain interactions
 
 ## Phase 2: Wallet Connection
 
@@ -117,59 +122,61 @@ NOOT WARS is a meme-themed Rock-Paper-Scissors style singleplayer game incorpora
    - Add connection status indicators ✅
    - Display connected wallet address (add it to a header component) ✅
 
-3. **Token Interface** ⏳
-   - Define NOOT token interface with ERC20 ABI. Pull from VM
-   - Set up contract interaction using viem/wagmi - make it a react hook ✅
-   - Implement balance checking functionality ⏳
+3. **Token Interface** ✅
+   - Define NOOT token interface with ERC20 ABI ✅
+   - Set up contract interaction using viem/wagmi ✅
+   - Implement balance checking functionality ✅
    - Display user's $NOOT balance ⏳
 
 ### Deliverables
 - Functional wallet connection UI ✅
 - Ability to connect/disconnect wallet ✅
-- Display of user's wallet address and $NOOT balance ⏳
+- Display of user's wallet address ✅
+- NOOT token contract integration ✅
 
 ### Implementation Notes
 - Wallet connection is implemented through AbstractWalletProvider
 - Wallet state is managed in the WalletContext
 - The useWallet hook provides wallet functionality to components
 - ConnectButton and WalletInfo components handle the UI
-- Need to complete NOOT token balance integration
+- Token interface fully implemented with contract address and ABI
+- Balance checking functionality implemented in useWallet hook
 
 ## Phase 3: Wagering Implementation
 
 ### Tasks
-1. **Wager UI**
-   - Design wager setup interface to appear before match starts
-   - Create wager confirmation dialog
-   - Add match start button contingent on successful wager
+1. **Wager UI** ✅
+   - Design wager setup interface to appear before match starts ✅
+   - Create wager confirmation dialog ✅
+   - Add match start button contingent on successful wager ✅
 
-2. **Token Approval**
-   - Implement $NOOT token approval flow
-   - Create approval status indicators
-   - Develop transaction status notifications
+2. **Token Approval** ✅
+   - Implement $NOOT token approval flow ✅
+   - Create approval status indicators ✅
+   - Develop transaction status notifications ✅
 
-3. **Match Settlement**
-   - Implement transaction handling for match wagering
-   - Set up win/loss token transfer logic
-   - Update UI based on transaction status
-   - Track phantom "EXP" for wins
+3. **Match Settlement** ⏳
+   - Implement transaction handling for match wagering ✅
+   - Set up win/loss token transfer logic ✅
+   - Update UI based on transaction status ⏳
+   - Track phantom "EXP" for wins ✅
 
-4. **Data Persistence**
-   - Expand local storage to include transaction history
-   - Store match results with associated wagers
-   - Save cumulative EXP from wins
+4. **Data Persistence** ✅
+   - Expand local storage to include transaction history ✅
+   - Store match results with associated wagers ✅
+   - Save cumulative EXP from wins ✅
 
 ### Deliverables
-- Complete wagering system using $NOOT tokens
-- Token approval and transaction flows
-- Match settlement process for wins/losses
-- Transaction history and EXP tracking
+- Complete wagering system using $NOOT tokens ⏳
+- Token approval and transaction flows ✅
+- Match settlement process for wins/losses ⏳
+- Transaction history and EXP tracking ✅
 
 ### Implementation Plan
-- Create a new WagerContext to manage wagering state
-- Implement useWager hook for component access
-- Develop WagerSetup and WagerConfirmation components
-- Integrate with NOOT token contract using viem/wagmi
+- Create a new WagerContext to manage wagering state ✅
+- Implement useWager hook for component access ✅
+- Develop WagerSetup and WagerConfirmation components ✅
+- Integrate with NOOT token contract using viem/wagmi ✅
 
 ## Phase 4: Polish & UX Improvements
 
@@ -267,6 +274,18 @@ interface WalletState {
 }
 ```
 
+**Wager State:**
+```typescript
+interface WagerState {
+  amount: string;
+  isApproved: boolean;
+  isProcessing: boolean;
+  transactionHash: string | null;
+  error: string | null;
+  currentAllowance: string;
+}
+```
+
 **Local Storage Schema:**
 ```typescript
 interface StorageData {
@@ -282,26 +301,28 @@ interface StorageData {
   matchHistory: {
     timestamp: number;
     result: MatchResult;
-    wager: number;
+    wager: string;
     expGained: number;
+    transactionHash?: string;
   }[];
 }
 ```
 
 ### Important Contract Information
 ```typescript
-// NOOT Token Contract (to be filled in)
-const NOOT_TOKEN_ADDRESS = "0x..."; // Add actual contract address
-const NOOT_TOKEN_ABI = [...]; // Add actual ABI
+// NOOT Token Contract
+const NOOT_TOKEN_ADDRESS = "0x85Ca16Fd0e81659e0b8Be337294149E722528731";
+// Game Contract (receives wagers)
+const GAME_CONTRACT_ADDRESS = "0x4a3d233114ED63B41e54c90E5F8A285C6D0DC907";
 ```
 
 ## Implementation Timeline
 
 | Phase | Estimated Duration | Key Milestones | Status |
 |-------|-------------------|----------------|--------|
-| Phase 1 | 1-2 weeks | Core game mechanics, Local storage | 80% Complete |
-| Phase 2 | 1 week | Wallet connection, Token interface | 50% Complete |
-| Phase 3 | 1-2 weeks | Wagering system, Match settlement | Not Started |
+| Phase 1 | 1-2 weeks | Core game mechanics, Local storage | 100% Complete |
+| Phase 2 | 1 week | Wallet connection, Token interface | 90% Complete |
+| Phase 3 | 1-2 weeks | Wagering system, Match settlement | 60% Complete |
 | Phase 4 | 1-2 weeks | UI polish, Error handling, Stats dashboard | Not Started |
 | Phase 5 | Ongoing | Feature expansion based on user feedback | Not Started |
 

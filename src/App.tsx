@@ -7,6 +7,7 @@ import { AbstractWalletProvider } from '@abstract-foundation/agw-react';
 import { abstractTestnet, abstract } from 'viem/chains';
 import { http } from 'wagmi';
 import { GameProvider } from './contexts/GameContext';
+import { WagerProvider } from './contexts/WagerContext';
 import Game from './components/Game/Game';
 import { useWallet } from './contexts/WalletContext';
 
@@ -55,7 +56,9 @@ const AppContent = () => {
             {/* Game interface */}
             <div className="w-full">
               <GameProvider>
-                <Game />
+                <WagerProvider>
+                  <Game />
+                </WagerProvider>
               </GameProvider>
             </div>
           </div>

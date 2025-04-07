@@ -7,6 +7,9 @@ export interface StorageData {
     losses: number
     draws: number
     totalExp: number
+    nootWagered: number
+    nootWon: number
+    nootLost: number
   }
   matchHistory: MatchHistory[]
 }
@@ -15,6 +18,8 @@ export interface MatchHistory {
   timestamp: number
   result: MatchResult
   expGained: number
+  wager: string
+  transactionHash?: string
 }
 
 // Storage key
@@ -37,7 +42,10 @@ export const getStoredData = (): StorageData => {
       wins: 0,
       losses: 0,
       draws: 0,
-      totalExp: 0
+      totalExp: 0,
+      nootWagered: 0,
+      nootWon: 0,
+      nootLost: 0
     },
     matchHistory: []
   }
@@ -53,24 +61,38 @@ export const saveStoredData = (data: StorageData): void => {
 }
 
 // Update stats after match
-export const updateStats = (result: MatchResult, expGained: number = 0): void => {
+export const updateStats = (
+  result: MatchResult, 
+  expGained: number = 0, 
+  wager: string = '1',
+  transactionHash?: string
+): void => {
   const data = getStoredData()
+  
+  // Parse wager as number for stats
+  const wagerAmount = parseFloat(wager)
   
   // Update stats based on result
   if (result === 'win') {
     data.stats.wins += 1
     data.stats.totalExp += expGained
+    // In a win, we don't lose NOOT but gain EXP
   } else if (result === 'loss') {
     data.stats.losses += 1
+    data.stats.nootLost += wagerAmount
+    data.stats.nootWagered += wagerAmount
   } else {
     data.stats.draws += 1
+    // In a draw, wager is returned (no tokens lost)
   }
   
   // Add match to history
   data.matchHistory.push({
     timestamp: Date.now(),
     result,
-    expGained
+    expGained,
+    wager,
+    transactionHash
   })
   
   // Save updated data
@@ -87,6 +109,26 @@ export const getPlayerStats = () => {
 export const getMatchHistory = () => {
   const data = getStoredData()
   return data.matchHistory
+}
+
+// Add transaction hash to most recent match
+export const updateTransactionHash = (transactionHash: string): void => {
+  const data = getStoredData()
+  
+  if (data.matchHistory.length > 0) {
+    // Get the most recent match
+    const lastMatch = data.matchHistory[data.matchHistory.length - 1]
+    lastMatch.transactionHash = transactionHash
+    
+    // Save updated data
+    saveStoredData(data)
+  }
+}
+
+// Get transaction history (matches with transaction hashes)
+export const getTransactionHistory = () => {
+  const data = getStoredData()
+  return data.matchHistory.filter(match => match.transactionHash)
 }
 
 // Clear all stored data

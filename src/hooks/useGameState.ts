@@ -22,7 +22,7 @@ export const useGameState = () => {
     currentRound: 1,
     matchResult: null,
     exp: 0,
-    isWagerSet: true, // For Phase 1, we'll default this to true
+    isWagerSet: false, // Default to false for Phase 3 to require wager approval
   })
 
   // Load exp from localStorage on initial render
@@ -47,7 +47,8 @@ export const useGameState = () => {
     // Save match result to local storage if match is complete
     if (matchResult) {
       const expGained = matchResult === 'win' ? 10 : 0
-      updateStats(matchResult, expGained)
+      // We don't update actual stats until the wager is settled
+      // This will be done by the WagerConfirmation component
     }
     
     // Update state
@@ -58,7 +59,7 @@ export const useGameState = () => {
       roundResults: newRoundResults,
       currentRound: prev.currentRound + 1,
       matchResult,
-      exp: matchResult === 'win' ? prev.exp + 10 : prev.exp,
+      // Don't update exp here, we'll do it after wager settlement
     }))
   }
 
@@ -69,7 +70,10 @@ export const useGameState = () => {
       resetGame()
     }
     
-    processRoundResult(choice)
+    // Only allow making a choice if wager is set
+    if (gameState.isWagerSet) {
+      processRoundResult(choice)
+    }
   }
 
   // Reset game
@@ -81,13 +85,22 @@ export const useGameState = () => {
       roundResults: [],
       currentRound: 1,
       matchResult: null,
-      isWagerSet: true,
+      isWagerSet: false, // Reset wager approval status
+    }))
+  }
+
+  // Set wager status to approved
+  const setWagerApproved = () => {
+    setGameState(prev => ({
+      ...prev,
+      isWagerSet: true
     }))
   }
 
   return {
     gameState,
     makeChoice,
-    resetGame
+    resetGame,
+    setWagerApproved
   }
 } 

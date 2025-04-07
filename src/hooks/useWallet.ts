@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useAccount, usePublicClient } from 'wagmi';
+import { useAccount, usePublicClient, useWalletClient } from 'wagmi';
 import { parseUnits, hexToString, stringToHex, encodeFunctionData } from 'viem';
 import { useWallet } from '../contexts/WalletContext';
 
@@ -32,6 +32,16 @@ const ERC20_ABI = [
     stateMutability: 'view',
     type: 'function',
   },
+  {
+    inputs: [
+      { name: 'to', type: 'address' },
+      { name: 'value', type: 'uint256' },
+    ],
+    name: 'transfer',
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
 ];
 
 // NOOT token contract address
@@ -39,10 +49,14 @@ const NOOT_TOKEN_ADDRESS = '0x85Ca16Fd0e81659e0b8Be337294149E722528731' as `0x${
 // Game contract address that will receive the wagers
 const GAME_CONTRACT_ADDRESS = '0x4a3d233114ED63B41e54c90E5F8A285C6D0DC907' as `0x${string}`;
 
+// Maximum uint256 value for unlimited approvals
+const MAX_UINT256 = BigInt('0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+
 export const useWalletActions = () => {
   const { walletState } = useWallet();
   const { address } = useAccount();
   const publicClient = usePublicClient();
+  const { data: walletClient } = useWalletClient();
 
   // Check token allowance
   const checkAllowance = useCallback(async () => {
@@ -65,25 +79,34 @@ export const useWalletActions = () => {
 
   // Approve tokens to be spent by the game contract
   const approveNOOT = useCallback(async (amount: string) => {
-    if (!address) {
+    if (!address || !walletClient || !publicClient) {
       throw new Error('Wallet not connected');
     }
 
     try {
-      // Convert human-readable amount to token units (assuming 18 decimals)
-      const tokenAmount = parseUnits(amount, 18);
+      // Use MAX_UINT256 for unlimited approval instead of a specific amount
+      // This means the user only needs to approve once
       
-      // This is a placeholder since we're not using the actual Abstract client
-      // In a real implementation, you would use the client's writeContract method
-      console.log(`Would approve ${tokenAmount} NOOT tokens`);
+      // Prepare the approve transaction
+      const hash = await walletClient.writeContract({
+        address: NOOT_TOKEN_ADDRESS,
+        abi: ERC20_ABI,
+        functionName: 'approve',
+        args: [GAME_CONTRACT_ADDRESS, MAX_UINT256],
+      });
       
-      // Return a mock transaction hash
-      return '0x0000000000000000000000000000000000000000000000000000000000000000';
+      console.log(`Approved maximum amount of NOOT tokens, transaction hash: ${hash}`);
+      
+      // Wait for transaction to be mined
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      console.log('Transaction confirmed:', receipt);
+      
+      return hash;
     } catch (error) {
       console.error('Error approving NOOT tokens:', error);
       throw error;
     }
-  }, [address]);
+  }, [address, walletClient, publicClient]);
 
   // Check NOOT balance
   const checkNOOTBalance = useCallback(async () => {
@@ -104,10 +127,42 @@ export const useWalletActions = () => {
     }
   }, [publicClient, address]);
 
+  // Transfer NOOT tokens when the user loses
+  const transferNOOTOnLoss = useCallback(async (amount: string) => {
+    if (!address || !walletClient || !publicClient) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      // Convert amount to bigint with 18 decimals
+      const wagerBigInt = parseUnits(amount, 18);
+      
+      // Send tokens to the game contract
+      const hash = await walletClient.writeContract({
+        address: NOOT_TOKEN_ADDRESS,
+        abi: ERC20_ABI,
+        functionName: 'transfer',
+        args: [GAME_CONTRACT_ADDRESS, wagerBigInt],
+      });
+      
+      console.log(`Transferred ${amount} NOOT tokens to contract, transaction hash: ${hash}`);
+      
+      // Wait for transaction to be mined
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      console.log('Transaction confirmed:', receipt);
+      
+      return hash;
+    } catch (error) {
+      console.error('Error transferring NOOT tokens:', error);
+      throw error;
+    }
+  }, [address, walletClient, publicClient]);
+
   return {
     checkAllowance,
     approveNOOT,
     checkNOOTBalance,
+    transferNOOTOnLoss,
     isConnected: walletState.isConnected,
     address: walletState.address,
     balance: walletState.balance,
